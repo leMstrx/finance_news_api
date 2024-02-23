@@ -75,8 +75,6 @@ def main():
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
-    #Test
-    #TEST
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS daily_sentiments (
         date DATE, 
