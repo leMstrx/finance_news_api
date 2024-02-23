@@ -5,6 +5,7 @@ from finbert_utils import estimate_sentiment
 import sqlite3
 import datetime
 
+#First Push to Github
 
 
 
