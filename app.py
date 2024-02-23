@@ -16,17 +16,31 @@ def get_db_connection():
 def home():
     return "Welcome to the Finance News API"
 
-#Example endpoint to fetch news
-@app.route('/news')
-def get_news():
-    conn = get_db_connection()
-    cur = conn.cursor()
+#End point to fetch all news
+@app.route('/news/all')
+def get_all_news():
+    conn = get_db_connection() #Connecting to DB
+    cur = conn.cursor() #Making Edits available
     cur.execute('SELECT * FROM news ORDER BY id ASC')
     news_items = cur.fetchall()
 
     #Convert the result to a list of dicts, which can be easily turned into JSON
     news_list = [dict(ix) for ix in news_items]
 
+    conn.close()    #Closing DB Connection to avoid data leaks
+    return jsonify(news_list)
+
+#End point to Fetch News for a specific symbol
+@app.route('/news/<symbol>')
+def get_news_for_symbol(symbol:str):
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute('SELECT * FROM news WHERE related_companies LIKE ? ORDER BY id ASC', ('%' + symbol + '%',))
+    news_items = cur.fetchall()
+    
+    news_list = [dict(ix) for ix in news_items]
+    
     conn.close()
     return jsonify(news_list)
 
