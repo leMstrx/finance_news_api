@@ -76,6 +76,7 @@ def main():
     )
     ''')
     #Test
+    #TEST
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS daily_sentiments (
         date DATE, 
