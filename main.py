@@ -4,6 +4,7 @@ from stocks_info import stocks_info, stock_symbols
 from finbert_utils import estimate_sentiment
 import sqlite3
 import datetime
+import secrets
 
 #First Push to Github
 
@@ -54,6 +55,7 @@ def delete_old_news(cursor, conn):
     cursor.execute("DELETE FROM news WHERE timestamp < datetime('now', '-2 days')")
     conn.commit()
 
+
 def main():
     response = requests.get("https://biztoc.com/")
     soup = bs4.BeautifulSoup(response.text, 'html.parser')
@@ -76,6 +78,16 @@ def main():
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+
+    #Generating API Keys to control usage of my api
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS api_keys (
+        id INTEGER PRIMARY Key, 
+        key TEXT NOT NULL UNIQUE,
+        owner TEXT NOT NULL, 
+        creation_date DATE NOT NULL
+    )''')
+
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS daily_sentiments (
         date DATE, 
