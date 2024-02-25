@@ -6,8 +6,6 @@ import sqlite3
 import datetime
 import secrets
 
-#First Push to Github
-
 
 
 def find_related_articles(title, data_p):

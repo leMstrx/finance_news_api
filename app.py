@@ -102,7 +102,7 @@ def get_news_for_symbol(symbol:str):
     conn = get_db_connection()
     cur = conn.cursor()
 
-    cur.execute('SELECT * FROM news WHERE related_companies LIKE ? ORDER BY id ASC', ('%' + symbol + '%',))
+    cur.execute('SELECT * FROM news WHERE related_companies LIKE ? ORDER BY id DESC', ('%' + symbol + '%',))
     news_items = cur.fetchall()
     
     news_list = [dict(ix) for ix in news_items]
