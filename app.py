@@ -3,6 +3,9 @@ import datetime
 import sqlite3
 import secrets
 import functools
+import sys
+import click
+from flask.cli import with_appcontext
 
 #Creating the Flask App
 app = Flask("Finance_News_API")
@@ -13,6 +16,19 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+@app.cli.command('create-api-key')
+@with_appcontext
+@click.argument('owner')
+def create_api_key(owner):
+    """Generate a new API key for the specified owner"""
+    existing_key = check_owner_has_key(owner)
+    if existing_key: 
+        print(f"Owner already has an API key: {existing_key['key']}")
+    else: 
+        key = generate_api_key()
+        add_api_key_to_db(key, owner)
+        print(f"Generated new API key for: {owner}: {key}")
+
 
 """
 ALL API-Key RELATED STUFF
@@ -21,12 +37,22 @@ def generate_api_key():
     return secrets.token_urlsafe(16) #Generates a secure, random URL-safe text
 
 def add_api_key_to_db(key, owner):
-    conn = sqlite3.connect('sentiment_analysis.db')
+    conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('INSERT INTO api_keys (key, owner, creation_date) VALUES (?, ?, ?)',
                 (key, owner, datetime.datetime.now()))
     conn.commit()
     conn.close()
+
+def check_owner_has_key(owner):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM api_keys WHERE owner = ?', (owner,))
+    key_info = cur.fetchone()
+    conn.close()
+    return key_info
+
+
 
 def require_api_key(f):
     @functools.wraps(f)
