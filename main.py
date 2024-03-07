@@ -4,8 +4,17 @@ from stocks_info import stocks_info, stock_symbols
 from finbert_utils import estimate_sentiment
 import sqlite3
 import datetime
-import secrets
+from newspaper import Article, Config
+import nltk
+from transformers import pipeline
 
+#Download NLP Tokenizer und Summarizer  
+nltk.download('punkt')
+summarizer = pipeline("summarization")
+
+#Einrichten vom Article Modul um Bot Detection zu umgehen 
+config = Config()
+config.browser_user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
 
 
 def find_related_articles(title, data_p):
@@ -47,6 +56,16 @@ def insert_news_update_sentiment(title, url, data_p, sentiment, probability, rel
             ''', (today, company, sentiment, probability, sentiment, sentiment, sentiment, sentiment, probability))
 
         conn.commit()
+
+def download_and_parse_article(url):
+    article = Article(url)
+    try: 
+        article.download()
+        article.parse()
+        return article
+    except Exception as e:
+        #print(f"Failed to download and parse article at {url}: {e}")
+        return None
 
 def delete_old_news(cursor, conn):
     #Delete entries older than 2 days
@@ -105,7 +124,65 @@ def main():
     delete_old_news(cursor=cursor, conn=conn)
     # Find all <a> tags with the 'data-p' attribute
     news_items = soup.find_all('a', attrs={'data-p': True})
+    '''
+    for item in news_items:
+        news_url = item['href']
+        if 'https://biztoc.com' in news_url:
+            pass#Skip this one
+        else:
+            respone = requests.get(news_url)
+            try: 
+                article = download_and_parse_article(news_url)
+                text = article.text
+                if article and len(text.split()) > 130 and len(text.split()) < 1024: 
+                    title = article.title
+                    publish_date = article.publish_date
+                    #text = article.text
+                    content = summarizer(text, max_length=130, min_length=30, do_sample=False)
+                    summary = content[0]['summary_text']
 
+                    article.nlp()
+                    keywords = article.keywords
+
+                    #print(f"News URL:        {news_url}")
+                    #print(f"Title:           {title}")
+                    #print(f"Publishing Date: {publish_date}")
+                    #print(f"Text:            {text}")
+                    #print(f"Summary:         {summary}")
+                    #print(f"Keywords:        {keywords}")
+                    print("11111111")
+
+                else:
+                    news_url = item['href']  # The URL of the news item
+                    data_raw = item.get('data-p', '')  # Additional text provided in the data-p attribute, with a default if not present
+                    data_p = str(data_raw)
+                    title = item.get_text(strip=True)  # The text content of the <a> tag, which is the title of the news item
+                    text = f"Title: {title}, Content:  {data_p}"
+
+                    related_companies = find_related_articles(title=title, data_p=data_p)
+                    #print(related_companies)
+                    sentiment, probability = estimate_sentiment(text)
+                    
+                    # Print out if there are related companies
+                    if len(related_companies) != 0:
+                        if "http" in news_url:
+                            #print(f"Related Companies: {related_companies}")
+                            #print(f"Title: {title}")
+                            #print(f"URL: {news_url}")
+                            #print(f"Data: {data_p}")
+                            ##print(type(data_p))
+                            #print("---------")
+                            #print(sentiment, probability)
+                            #print("-+-+-+-+-+-+-+-+-+-+-+-\n")
+                            print("22222222")
+                            #Logic to add in database
+            except Exception as e:
+                #print(f"An error occurred while processing {news_url}\n\n\n\n\n")
+                print("000000000")
+
+    '''
+
+    #Allgemeine Logik direkt über Biztoc
     for item in news_items:
         news_url = item['href']  # The URL of the news item
         data_raw = item.get('data-p', '')  # Additional text provided in the data-p attribute, with a default if not present
@@ -128,7 +205,7 @@ def main():
                 print("---------")
                 print(sentiment, probability)
                 print("-+-+-+-+-+-+-+-+-+-+-+-\n")
-
+        '''
         insert_news_update_sentiment(title=title, 
                                     url=news_url, 
                                     data_p=data_p, 
@@ -137,7 +214,7 @@ def main():
                                     related_companies=related_companies, 
                                     cursor=cursor, 
                                     conn=conn)
-    
+        '''
 
 
     print("\n\n\n\n\nScraping and processing logic executed!!\n\n\n\n\n")
