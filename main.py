@@ -205,7 +205,7 @@ def main():
                 print("---------")
                 print(sentiment, probability)
                 print("-+-+-+-+-+-+-+-+-+-+-+-\n")
-        '''
+        
         insert_news_update_sentiment(title=title, 
                                     url=news_url, 
                                     data_p=data_p, 
@@ -214,7 +214,7 @@ def main():
                                     related_companies=related_companies, 
                                     cursor=cursor, 
                                     conn=conn)
-        '''
+        
 
 
     print("\n\n\n\n\nScraping and processing logic executed!!\n\n\n\n\n")
