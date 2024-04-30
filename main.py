@@ -6,8 +6,7 @@ import sqlite3
 import datetime
 from newspaper import Article, Config
 import nltk
-from transformers import pipeline
-
+from transformers import pipeline 
 #Download NLP Tokenizer und Summarizer  
 nltk.download('punkt')
 summarizer = pipeline("summarization")
